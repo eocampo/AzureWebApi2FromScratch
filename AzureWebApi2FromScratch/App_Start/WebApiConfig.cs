@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Web.Http;
 
 namespace AzureWebApi2FromScratch
@@ -9,6 +11,11 @@ namespace AzureWebApi2FromScratch
     {
         public static void Register(HttpConfiguration config) {
             // Web API configuration and services
+            //config.Formatters.JsonFormatter.SupportedMediaTypes
+            //    .Add(new MediaTypeHeaderValue("text/html"));
+            ////or you can choose to remove all formatters but Json:
+            //GlobalConfiguration.Configuration.Formatters.Clear();
+            //GlobalConfiguration.Configuration.Formatters.Add(new JsonMediaTypeFormatter());
 
             // Web API routes
             config.MapHttpAttributeRoutes();
