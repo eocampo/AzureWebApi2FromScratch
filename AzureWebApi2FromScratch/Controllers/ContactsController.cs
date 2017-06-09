@@ -14,24 +14,8 @@ namespace AzureWebApi2FromScratch.Controllers
         // GET api/contacts        
         [SwaggerOperation("GetAll")]
         public IEnumerable<Contact> Get() {
-            return new Contact[] { 
-                new Contact {
-                    ContactId = 1,
-                    DisplayName = "José Ernesto Ocampo Cicero",
-                    FirstName = "José Ernesto",
-                    LastName = "Ocampo Cicero",
-                    Email = "ernesto@sistrategia.com",
-                    Phone = "(777) 328-8894"
-                }
-                ,new Contact {
-                    ContactId = 2,
-                    DisplayName = "Victor Manuel Ocampo Cicero",
-                    FirstName = "Victor Manuel",
-                    LastName = "Ocampo Cicero",
-                    Email = "victor@sistrategia.com",
-                    Phone = "(777) 328-8894"
-                }
-            };
+            ApplicationDbContext dbContext = new ApplicationDbContext();
+            return dbContext.Contacts.ToArray();
         }
 
         // GET api/contacts/1
@@ -39,45 +23,74 @@ namespace AzureWebApi2FromScratch.Controllers
         [SwaggerResponse(HttpStatusCode.OK)]
         [SwaggerResponse(HttpStatusCode.NotFound)]
         public IHttpActionResult Get(int id) {
-            switch (id) {
-                case 1: return Ok(new Contact {
-                    ContactId = 1,
-                    DisplayName = "José Ernesto Ocampo Cicero",
-                    FirstName = "José Ernesto",
-                    LastName = "Ocampo Cicero",
-                    Email = "ernesto@sistrategia.com",
-                    Phone = "(777) 328-8894"
-                });
-                case 2: return Ok(new Contact {
-                    ContactId = 2,
-                    DisplayName = "Victor Manuel Ocampo Cicero",
-                    FirstName = "Victor Manuel",
-                    LastName = "Ocampo Cicero",
-                    Email = "victor@sistrategia.com",
-                    Phone = "(777) 328-8894"
-                });
-                default: return NotFound();
-            }
+            ApplicationDbContext dbContext = new ApplicationDbContext();
+            var result = dbContext.Contacts.SingleOrDefault(c => c.ContactId == id);
+            if (result != null)
+                return Ok(result);
+            else
+                return NotFound();
         }
 
         // POST api/contacts
         [SwaggerOperation("Create")]
         [SwaggerResponse(HttpStatusCode.Created)]
-        public void Post([FromBody]Contact value) {
+        public IHttpActionResult Post([FromBody]Contact contact) {
+            try {
+                ApplicationDbContext dbContext = new ApplicationDbContext();
+                dbContext.Contacts.Add(contact);
+                dbContext.SaveChanges();
+                return Created(new Uri(Request.RequestUri + contact.ContactId.ToString()), contact);
+            }
+            catch {
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.NoContent);
+                return ResponseMessage(response);
+            }            
         }
 
         // PUT api/contacts/1
         [SwaggerOperation("Update")]
         [SwaggerResponse(HttpStatusCode.OK)]
         [SwaggerResponse(HttpStatusCode.NotFound)]
-        public void Put(int id, [FromBody]Contact value) {
+        public IHttpActionResult Put(int id, [FromBody]Contact updatedContact) {
+            ApplicationDbContext dbContext = new ApplicationDbContext();
+            var contact = dbContext.Contacts.SingleOrDefault(c => c.ContactId == id);
+            if (contact != null) {
+                if (!string.IsNullOrEmpty(updatedContact.DisplayName))
+                    contact.DisplayName = updatedContact.DisplayName;
+                if (!string.IsNullOrEmpty(updatedContact.FirstName))
+                    contact.FirstName = updatedContact.FirstName;
+                if (!string.IsNullOrEmpty(updatedContact.LastName))
+                    contact.LastName = updatedContact.LastName;
+                if (!string.IsNullOrEmpty(updatedContact.Email))
+                    contact.Email = updatedContact.Email;
+                if (!string.IsNullOrEmpty(updatedContact.Phone))
+                    contact.Phone = updatedContact.Phone;
+                dbContext.SaveChanges();
+                return Ok(); // Ok(result);
+            }
+            else
+                return NotFound();        
+
+            //dbContext.Contacts.Attach(updatedContact);
+            //dbContext.Entry(updatedContact).State = System.Data.Entity.EntityState.Modified;
+            //dbContext.SaveChanges();
+            //return Ok();
         }
 
         // DELETE api/contacts/1
         [SwaggerOperation("Delete")]
         [SwaggerResponse(HttpStatusCode.OK)]
         [SwaggerResponse(HttpStatusCode.NotFound)]
-        public void Delete(int id) {
+        public IHttpActionResult Delete(int id) {
+            ApplicationDbContext dbContext = new ApplicationDbContext();
+            var result = dbContext.Contacts.SingleOrDefault(c => c.ContactId == id);
+            if (result != null) {
+                dbContext.Contacts.Remove(result);
+                dbContext.SaveChanges();
+                return Ok(); // Ok(result);
+            }
+            else
+                return NotFound();
         }
     }
 }
