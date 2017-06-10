@@ -14,4 +14,11 @@ namespace AzureWebApi2FromScratch.Models
         public string Email { get; set; }
         public string Phone { get; set; }
     }
+
+    public class Activity
+    {
+        public int ActivityId { get; set; }
+        public string DisplayName { get; set; }
+        public DateTime StartDate { get; set; }
+    }
 }

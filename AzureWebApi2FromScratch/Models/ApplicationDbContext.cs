@@ -10,8 +10,10 @@ namespace AzureWebApi2FromScratch.Models
     {
         public ApplicationDbContext()
             : base("DefaultConnection") {
+                Database.SetInitializer(new MigrateDatabaseToLatestVersion<ApplicationDbContext, AzureWebApi2FromScratch.Migrations.Configuration>("DefaultConnection"));
         }
 
         public virtual DbSet<Contact> Contacts { get; set; }
+        public virtual DbSet<Activity> Activities { get; set; }
     }
 }
